@@ -1,0 +1,29 @@
+# Configuration file for training parameters
+
+# MLP training
+mlp:
+  hidden_features: 64
+  train_lr: 0.001
+  train_max_epoch: 50
+  train_patience: 10
+  clip: 2.0
+
+# 100-layer GCN training
+gcn_100layer:
+    hidden_features: 64
+    train_lr: 0.001
+    train_max_epoch: 100
+    train_patience: 10
+    clip: 2.0
+
+# parameters to load tu datasets
+tu:
+  train_ratio: 0.7
+  validate_ratio: 0.2
+  batch_size: 20
+
+# parameters to load ogbg datasets
+ogbg:
+  batch_size: 32
+
+
