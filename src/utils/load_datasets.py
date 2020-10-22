@@ -1,7 +1,7 @@
 from ogb.nodeproppred import DglNodePropPredDataset
 from ogb.graphproppred import DglGraphPropPredDataset, collate_dgl
 from dgl.data import CoraGraphDataset, CiteseerGraphDataset, PubmedGraphDataset
-from dgl.data.gnn_benckmark import Coauthor, AmazonCoBuy
+from dgl.data.gnn_benckmark import CoauthorPhysicsDataset, CoauthorCSDataset, AmazonCoBuyPhotoDataset, AmazonCoBuyComputerDataset
 from dgl.data import TUDataset
 from torch.utils.data import DataLoader
 import numpy as np
@@ -41,13 +41,15 @@ def load_copurchase_coauthors(args):
     # 20 per class for training
     # 30 per classes for validation
     # rest labels for testing
-    if 'amazon' in args.dataset:
-        name = args.dataset.split('_')[-1]
-        dataset = AmazonCoBuy(name)
-    elif 'coauthors' in args.dataset:
-        name = args.dataset.split('_')[-1]
-        dataset = Coauthor(name)
-    g = dataset.data[0]
+    if args.dataset == 'amazon_photo':
+        dataset = AmazonCoBuyPhotoDataset()
+    elif args.dataset == 'amazon_computers':
+        dataset = AmazonCoBuyComputerDataset()
+    elif args.dataset == 'coauthor_physics':
+        dataset = CoauthorPhysicsDataset()
+    elif args.dataset == 'coauthor_cs':
+        dataset = CoauthorCSDataset()
+    g = dataset[0]
     features = torch.FloatTensor(g.ndata['feat'])
     features = (features.t() / torch.sum(features, dim=1)).t()  # normalize so that sum of each row equals 1
     labels = torch.LongTensor(g.ndata['label'])
@@ -55,7 +57,7 @@ def load_copurchase_coauthors(args):
     indices = []
     num_classes = torch.max(labels).item() + 1
     for i in range(num_classes):
-        index = (labels == i).nonzero().view(-1)
+        index = (labels == i).nonzero(as_tuple=False).view(-1)
         index = index[torch.randperm(index.size(0))]
         indices.append(index)
 
@@ -185,7 +187,7 @@ def load_dataset(args):
     if args.dataset in 'cora, citeseer, pubmed':
         g, features, labels, train_mask, valid_mask, test_mask = load_citation(args)
         return g, features, labels, train_mask, valid_mask, test_mask
-    elif args.dataset in 'amazon_photo, amazon_computers, coauthors_cs, coauthors_physics':
+    elif args.dataset in 'amazon_photo, amazon_computers, coauthor_cs, coauthor_physics':
         g, features, labels, train_mask, valid_mask, test_mask = load_copurchase_coauthors(args)
         return g, features, labels, train_mask, valid_mask, test_mask
     elif 'ogbn' in args.dataset:
